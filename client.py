@@ -1,27 +1,18 @@
 from langchain_mcp_adapters.client import MultiServerMCPClient
+from server.server_knowledge_retrieval import MCP_SERVER_KNOWLEDGE_RETRIEVAL
+from server.server_draft_procedure import MCP_TOOL_DRAFT_PROCEDURE
 from langgraph.prebuilt import create_react_agent
 import json
 import asyncio
 
 client = MultiServerMCPClient(
     {
-        "knowledge_retrieval": {
-            "command": "python",
-            # Replace with absolute path to your math_server.py file
-            "args": ["./server/server_knowledge_retrieval.py"],
-            "transport": "stdio",
-        },
-        "draft_procedures": {
-            # Ensure your start your weather server on port 8000
-            "url": "http://localhost:8000/mcp",
-            "transport": "streamable_http",
-        }
+        "knowledge_retrieval": MCP_SERVER_KNOWLEDGE_RETRIEVAL,
+        "draft_procedures": MCP_TOOL_DRAFT_PROCEDURE,  
     }
 )
 
-async def main():
-    tools = await client.get_tools()
-
+def print_friendly(tools):
     # Convert StructuredTool objects to JSON-friendly dictionaries
     tools_json_friendly = []
     for tool in tools:
@@ -35,6 +26,11 @@ async def main():
     # Print as human-readable JSON
     print(json.dumps(tools_json_friendly, indent=4))
 
-    # You can add more async code here
+async def main():
+    tools = await client.get_tools()
+
+    print_friendly(tools)
+
+    
 
 asyncio.run(main())
